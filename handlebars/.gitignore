@@ -1,5 +1,9 @@
 .sandbox/
 
+# IDEA project files
+.idea/
+*.iml
+
 ## Gradle.gitignore
 
 .gradle
