@@ -385,7 +385,7 @@ public class HbParsing {
 
   /**
    * closeBlock
-   * : OPEN_ENDBLOCK path CLOSE { $$ = $2; }
+   * : OPEN_ENDBLOCK helperName CLOSE { $$ = $2; }
    * ;
    */
   private boolean parseCloseBlock(PsiBuilder builder) {
@@ -397,7 +397,7 @@ public class HbParsing {
     }
 
     PsiBuilder.Marker mustacheNameMark = builder.mark();
-    parsePath(builder);
+    parseHelperName(builder);
     mustacheNameMark.done(MUSTACHE_NAME);
     parseLeafTokenGreedy(builder, CLOSE);
     closeBlockMarker.done(CLOSE_BLOCK_STACHE);
@@ -589,60 +589,20 @@ public class HbParsing {
 
   /**
    * param
-   * : path
-   * | STRING
-   * | NUMBER
-   * | BOOLEAN
-   * | dataName
+   * : helperName
    * | sexpr
    * ;
    */
   protected boolean parseParam(PsiBuilder builder) {
     PsiBuilder.Marker paramMarker = builder.mark();
 
-    if (parsePath(builder)) {
+    PsiBuilder.Marker helperNameMark = builder.mark();
+    if (parseHelperName(builder)) {
+      helperNameMark.drop();
       paramMarker.done(PARAM);
       return true;
-    }
-
-    PsiBuilder.Marker stringMarker = builder.mark();
-    if (parseLeafToken(builder, STRING)) {
-      stringMarker.drop();
-      paramMarker.done(PARAM);
-      return true;
-    }
-    else {
-      stringMarker.rollbackTo();
-    }
-
-    PsiBuilder.Marker integerMarker = builder.mark();
-    if (parseLeafToken(builder, NUMBER)) {
-      integerMarker.drop();
-      paramMarker.done(PARAM);
-      return true;
-    }
-    else {
-      integerMarker.rollbackTo();
-    }
-
-    PsiBuilder.Marker booleanMarker = builder.mark();
-    if (parseLeafToken(builder, BOOLEAN)) {
-      booleanMarker.drop();
-      paramMarker.done(PARAM);
-      return true;
-    }
-    else {
-      booleanMarker.rollbackTo();
-    }
-
-    PsiBuilder.Marker dataMarker = builder.mark();
-    if (parseDataName(builder)) {
-      dataMarker.drop();
-      paramMarker.done(PARAM);
-      return true;
-    }
-    else {
-      dataMarker.rollbackTo();
+    } else {
+      helperNameMark.rollbackTo();
     }
 
     PsiBuilder.Marker sexprMarker = builder.mark();
