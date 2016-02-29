@@ -5,7 +5,7 @@ import static com.dmarcotte.handlebars.parsing.HbTokenTypes.*;
 /**
  * Java representation of the validations in the spec/tokenizer.js revision which corresponds
  * to the revision of handlesbars.l that our lexer is based on
- * (https://github.com/wycats/handlebars.js/blob/b8a9f7264d3b6ac48514272bf35291736cedad00/spec/tokenizer.js)
+ * (https://github.com/wycats/handlebars.js/blob/91ffd32cad32b2d1cd310ff94f65b28c428206ac/spec/tokenizer.js)
  * <p/>
  * All the tests should be nearly identical except that we generate whitespace tokens to give IDEA a better picture
  * of the text, vs. the actual Handlebars lexer which can just toss whitespace out
@@ -262,6 +262,14 @@ public class HbTokenizerSpecTest extends HbLexerTest {
   public void testTokenizePartialWithTrailingSpaces() {
     TokenizerResult result = tokenize("{{>foo  }}");
     result.shouldMatchTokenTypes(OPEN_PARTIAL, ID, WHITE_SPACE, CLOSE);
+  }
+
+  /**
+   * tokenizes partial block declarations
+   */
+  public void testTokenizePartialBlockDeclarations() {
+    TokenizerResult result = tokenize("{{#> foo}}");
+    result.shouldMatchTokenTypes(OPEN_PARTIAL_BLOCK, WHITE_SPACE, ID, CLOSE);
   }
 
   /**

@@ -2,7 +2,7 @@ package com.dmarcotte.handlebars.parsing;
 
 /**
  * Java representations of the validations in Handlebars spec/parser.js
- * (Precise revision: https://github.com/wycats/handlebars.js/blob/b8a9f7264d3b6ac48514272bf35291736cedad00/spec/parser.js)
+ * (Precise revision: https://github.com/wycats/handlebars.js/blob/91ffd32cad32b2d1cd310ff94f65b28c428206ac/spec/parser.js)
  * <p/>
  * The tests here should map pretty clearly by name to the `it "does something"` validations in parser.js.
  * <p/>
@@ -79,6 +79,18 @@ public class HbParserSpecTest extends HbParserTest {
   }
 
   public void testPartialWithComplexName() {
+    doTest(true);
+  }
+
+  public void testPartialBlocks() {
+    doTest(true);
+  }
+
+  public void testPartialBlockMismatch() {
+    doTest(true);
+  }
+
+  public void testPartialBlocksWithArguments() {
     doTest(true);
   }
 

@@ -11,7 +11,7 @@ import static com.dmarcotte.handlebars.parsing.HbTokenTypes.*;
 
 /**
  * The parser is based directly on Handlebars.yy
- * (taken from the following revision: https://github.com/wycats/handlebars.js/blob/884bf1553663734f22ffcd9d758c9d71d4373bf9/src/handlebars.yy)
+ * (taken from the following revision: https://github.com/wycats/handlebars.js/blob/91ffd32cad32b2d1cd310ff94f65b28c428206ac/src/handlebars.yy)
  * <p/>
  * Methods mapping to expression in the grammar are commented with the part of the grammar they map to.
  * <p/>
@@ -119,6 +119,7 @@ public class HbParsing {
    * mustache if we parse this first)
    * | rawBlock
    * | partial
+   * | partialBlock
    * | ESCAPE_CHAR (HB_CUSTOMIZATION the official Handlebars lexer just throws out the escape char;
    * it's convenient for us to keep it so that we can highlight it)
    * | CONTENT
@@ -220,6 +221,24 @@ public class HbParsing {
       return true;
     }
 
+    /**
+     * partialBlock
+     +  : openPartialBlock program closeBlock
+     */
+    if (tokenType == OPEN_PARTIAL_BLOCK) {
+      PsiBuilder.Marker blockMarker = builder.mark();
+      if (parseOpenPartialBlock(builder)) {
+        parseProgram(builder);
+        parseCloseBlock(builder);
+        blockMarker.done(BLOCK_WRAPPER);
+      }
+      else {
+        return false;
+      }
+
+      return true;
+    }
+
     if (tokenType == ESCAPE_CHAR) {
       builder.advanceLexer(); // ignore the escape character
       return true;
@@ -291,6 +310,27 @@ public class HbParsing {
     }
 
     openRawBlockStacheMarker.done(OPEN_BLOCK_STACHE);
+    return true;
+  }
+
+  /**
+   * openPartialBlock
+   *  : OPEN_PARTIAL_BLOCK partialName param* hash? CLOSE
+   */
+  private boolean parseOpenPartialBlock(PsiBuilder builder) {
+    PsiBuilder.Marker openPartialBlockStacheMarker = builder.mark();
+    if (!parseLeafToken(builder, OPEN_PARTIAL_BLOCK)) {
+      openPartialBlockStacheMarker.rollbackTo();
+      return false;
+    }
+
+    if (parsePartialName(builder)) {
+      parseParamsStartHashQuestion(builder);
+    }
+
+    parseLeafTokenGreedy(builder, CLOSE);
+
+    openPartialBlockStacheMarker.done(OPEN_PARTIAL_BLOCK_STACHE);
     return true;
   }
 
