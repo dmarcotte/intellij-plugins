@@ -2,7 +2,7 @@ package com.dmarcotte.handlebars.parsing;
 
 /**
  * Java representations of the validations in Handlebars spec/parser.js
- * (Precise revision: https://github.com/wycats/handlebars.js/blob/91ffd32cad32b2d1cd310ff94f65b28c428206ac/spec/parser.js)
+ * (Precise revision: https://github.com/wycats/handlebars.js/blob/408192ba9f262bb82be88091ab3ec3c16dc02c6d/spec/parser.js)
  * <p/>
  * The tests here should map pretty clearly by name to the `it "does something"` validations in parser.js.
  * <p/>
@@ -159,6 +159,18 @@ public class HbParserSpecTest extends HbParserTest {
   }
 
   public void testChainedInverseBlockWithBlockParams() { doTest(true); }
+
+  public void testParseBlockDirectives() {
+    doTest(true);
+  }
+
+  public void testParseDirectives() {
+    doTest(true);
+  }
+
+  public void testFailIfDirectivesHaveInverse() {
+    doTest(true);
+  }
 
   /**
    * Note on the spec/parser.js porting: some tests at the end are omitted

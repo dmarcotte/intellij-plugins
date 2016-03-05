@@ -11,7 +11,7 @@ import static com.dmarcotte.handlebars.parsing.HbTokenTypes.*;
 
 /**
  * The parser is based directly on Handlebars.yy
- * (taken from the following revision: https://github.com/wycats/handlebars.js/blob/91ffd32cad32b2d1cd310ff94f65b28c428206ac/src/handlebars.yy)
+ * (taken from the following revision: https://github.com/wycats/handlebars.js/blob/408192ba9f262bb82be88091ab3ec3c16dc02c6d/src/handlebars.yy)
  * <p/>
  * Methods mapping to expression in the grammar are commented with the part of the grammar they map to.
  * <p/>
@@ -131,7 +131,7 @@ public class HbParsing {
 
     /**
      * block
-     * : openBlock program inverseAndChain? closeBlock
+     * : openBlock program inverseChain? closeBlock
      * | openInverse program inverseAndProgram? closeBlock
      */
     {
@@ -158,9 +158,18 @@ public class HbParsing {
 
       if (tokenType == OPEN_BLOCK) {
         PsiBuilder.Marker blockMarker = builder.mark();
+
+        // this is a fairly lo-fi way to detect this, but it's how it's done in handlebars.js (https://github.com/wycats/handlebars.js/commit/408192ba9f262bb82be88091ab3ec3c16dc02c6d#diff-e85944a1a496f573d1227511819c9e23R128)
+        // so we avoid unneeded complexity by directly porting it
+        boolean hasDecorator = (builder.getTokenText() != null && builder.getTokenText().equals("{{#*"));
         if (parseOpenBlock(builder)) {
           parseProgram(builder);
-          parseInverseChain(builder);
+          PsiBuilder.Marker inverseMarker = builder.mark();
+          if (parseInverseChain(builder) && hasDecorator) {
+            inverseMarker.error(HbBundle.message("hb.parsing.unexpected.decorator.inverse"));
+          } else {
+            inverseMarker.drop();
+          }
           parseCloseBlock(builder);
           blockMarker.done(BLOCK_WRAPPER);
         }
@@ -270,13 +279,15 @@ public class HbParsing {
    * : openInverseChain program inverseChain?
    * | inverseAndProgram
    */
-  private void parseInverseChain(PsiBuilder builder) {
-    if (!parseInverseAndProgram(builder)) {
-      if (parseOpenInverseChain(builder)) {
-        parseProgram(builder);
-        parseInverseChain(builder);
-      }
+  private boolean parseInverseChain(PsiBuilder builder) {
+    if (parseInverseAndProgram(builder)) {
+      return true;
+    } else if (parseOpenInverseChain(builder)) {
+      parseProgram(builder);
+      parseInverseChain(builder);
+      return true;
     }
+    return false;
   }
 
   /**
